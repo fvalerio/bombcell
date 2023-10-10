@@ -293,7 +293,29 @@ function updateUnit(unitQualityGuiHandle, memMapData, ephysData, rawWaveforms, i
 guiData = guidata(unitQualityGuiHandle);
 thisUnit = uniqueTemps(iCluster);
 colorsGdBad = [1, 0, 0; 0, 0.5, 0];
+if isnan(qMetric.waveformDuration_peakTrough(iCluster))
+    %% main title
+    set(guiData.mainTitle, 'String', ['Unit ID #', num2str(thisUnit), ...
+        ' (phy ID #: ' num2str(thisUnit-1) '; qMetric row #: ' num2str(iCluster) '), NaN waveform, skipping'], 'Color', [.5, .5, 0]);
+    set(guiData.peaks, 'XData', NaN, 'YData', NaN);
+    set(guiData.troughs, 'XData', NaN, 'YData', NaN);
+    set(guiData.maxTemplateWaveformLines, 'XData', nan(82, 1), 'YData', nan(82, 1))
+    set(guiData.tempTitle, 'String', '')
+    set(guiData.tempLegend, 'String', '')
+   
+    for iCh = 1:20
+        set(guiData.templateWaveformLines(iCh), 'XData', nan(82, 1), 'YData', nan(82, 1))
+    end
+     if param.extractRaw
+        for iCh = 1:20
+            set(guiData.rawWaveformLines(iCh), 'XData', nan(82, 1), 'YData', nan(82, 1))
+            set(guiData.maxRawWaveformLines, 'XData', nan(82, 1), 'YData', nan(82, 1))
+            set(guiData.rawTitle, 'String', '')
+            set(guiData.rawLegend, 'String', '')
+        end
+    end
 
+else
 %% main title
 if unitType(iCluster) == 1
     set(guiData.mainTitle, 'String', ['Unit ID #', num2str(thisUnit), ...
@@ -304,6 +326,7 @@ elseif unitType(iCluster) == 0 || unitType(iCluster) == 3
 elseif unitType(iCluster) == 2
     set(guiData.mainTitle, 'String', ['Unit ID #', num2str(thisUnit), ...
         ' (phy ID #: ' num2str(thisUnit-1)  '; qMetric row #: ' num2str(iCluster) '), multi-unit'], 'Color', [1, 0, 1]);
+end
 end
 
 %% plot 1: update curr unit location
@@ -321,7 +344,7 @@ end
 %     guiData.maxTemplateWaveformLines = maxTemplateWaveformLines;
 %     guiData.tempTitle = tempTitle;
 %     guiData.tempLegend = tempLegend;
-
+if ~isnan(qMetric.waveformDuration_peakTrough(iCluster))
 maxChan = qMetric.maxChannels(iCluster);
 maxXC = ephysData.channel_positions(maxChan, 1);
 maxYC = ephysData.channel_positions(maxChan, 2);
@@ -401,6 +424,7 @@ if param.extractRaw
         set(guiData.rawTitle, 'String', ['\color[rgb]{0 0 0}Mean raw waveform: \color[rgb]{1 0 0} amplitude, \color[rgb]{1 0 0} SNR ']);
     
     end
+end
 end
 
 %% 4. plot unit ACG

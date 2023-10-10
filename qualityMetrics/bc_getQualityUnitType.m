@@ -120,3 +120,5 @@ else
     unitType(isnan(unitType)) = 2; % MULTI UNIT
 
 end
+% nan waveforms = we can't classify this unit 
+unitType(isnan(qMetric.waveformDuration_peakTrough)) = NaN;
