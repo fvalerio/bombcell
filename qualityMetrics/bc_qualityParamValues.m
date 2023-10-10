@@ -19,6 +19,10 @@ function param = bc_qualityParamValues(ephysMetaDir, rawFile, ephysKilosortPath)
 param = struct; %initialize structure 
 
 %% calculating quality metrics parameters 
+% loading paramaters 
+param.loadPhy = 1; % load phy output if it is present 
+param.useRawWaveforms = 1; % must be set to 1 if param.loadPhy is true.  param.extractRaw must also be set to 1. 
+
 % plotting parameters 
 param.plotDetails = 0; % generates a lot of plots, 
 % mainly good if you running through the code line by line to check things,

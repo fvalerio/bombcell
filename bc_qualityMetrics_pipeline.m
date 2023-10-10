@@ -21,16 +21,16 @@ saveLocation = '/media/julie/ExtraHD/CB016'; % where you want to save the qualit
 savePath = fullfile(saveLocation, 'qMetrics'); 
 decompressDataLocal = '/media/julie/ExtraHD/decompressedData'; % where to save raw decompressed ephys data 
 
-%% load data 
-[spikeTimes_samples, spikeTemplates, templateWaveforms, templateAmplitudes, pcFeatures, ...
-    pcFeatureIdx, channelPositions] = bc_loadEphysData(ephysKilosortPath);
-
 %% detect whether data is compressed, decompress locally if necessary
 rawFile = bc_manageDataCompression(ephysRawDir, decompressDataLocal);
 
 %% which quality metric parameters to extract and thresholds 
 param = bc_qualityParamValues(ephysMetaDir, rawFile, ephysKilosortPath); 
 % param = bc_qualityParamValuesForUnitMatch(ephysMetaDir, rawFile) % Run this if you want to use UnitMatch after
+
+%% load data 
+[spikeTimes_samples, spikeTemplates, templateWaveforms, templateAmplitudes, pcFeatures, ...
+    pcFeatureIdx, channelPositions] = bc_loadEphysData(ephysKilosortPath, '', param.loadPhy);
 
 %% compute quality metrics 
 rerun = 0;

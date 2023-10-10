@@ -110,9 +110,12 @@ uniqueTemplates = unique(spikeTemplates);
 
 % extract and save or load in raw waveforms 
 
-if param.extractRaw
+if param.extractRaw || param.loadPhy
     [rawWaveformsFull, rawWaveformsPeakChan, signalToNoiseRatio] = bc_extractRawWaveformsFast(param, ...
         spikeTimes_samples, spikeTemplates, param.reextractRaw, savePath, param.verbose); % takes ~10' for 
+    if param.loadPhy || param.useRawWaveforms
+        qMetric.maxChannels = rawWaveformsPeakChan;
+    end
 end
 % an average dataset, the first time it is run, <1min after that
 
@@ -184,14 +187,22 @@ for iUnit = 1:length(uniqueTemplates)
     qMetric.nSpikes(iUnit) = bc_numberSpikes(theseSpikeTimes);
 
     %% waveform
-    
     waveformBaselineWindow = [param.waveformBaselineWindowStart, param.waveformBaselineWindowStop];
-    [qMetric.nPeaks(iUnit), qMetric.nTroughs(iUnit), qMetric.isSomatic(iUnit), forGUI.peakLocs{iUnit},...
-        forGUI.troughLocs{iUnit}, qMetric.waveformDuration_peakTrough(iUnit), ...
-        forGUI.spatialDecayPoints(iUnit,:), qMetric.spatialDecaySlope(iUnit), qMetric.waveformBaselineFlatness(iUnit), ....
-        forGUI.tempWv(iUnit,:)] = bc_waveformShape(templateWaveforms,thisUnit, qMetric.maxChannels(thisUnit),...
-        param.ephys_sample_rate, channelPositions, param.maxWvBaselineFraction, waveformBaselineWindow,...
-        param.minThreshDetectPeaksTroughs, param.plotDetails); %do we need tempWv ? 
+    if param.useRawWaveforms || param.loadPhy
+        [qMetric.nPeaks(iUnit), qMetric.nTroughs(iUnit), qMetric.isSomatic(iUnit), forGUI.peakLocs{iUnit},...
+            forGUI.troughLocs{iUnit}, qMetric.waveformDuration_peakTrough(iUnit), ...
+            forGUI.spatialDecayPoints(iUnit,:), qMetric.spatialDecaySlope(iUnit), qMetric.waveformBaselineFlatness(iUnit), ....
+            forGUI.tempWv(iUnit,:)] = bc_waveformShape(permute(rawWaveformsFull, [1,3,2]), iUnit, rawWaveformsPeakChan(iUnit),...
+            param.ephys_sample_rate, channelPositions, param.maxWvBaselineFraction, waveformBaselineWindow,...
+            param.minThreshDetectPeaksTroughs, param.plotDetails); %do we need tempWv ? 
+    else
+        [qMetric.nPeaks(iUnit), qMetric.nTroughs(iUnit), qMetric.isSomatic(iUnit), forGUI.peakLocs{iUnit},...
+            forGUI.troughLocs{iUnit}, qMetric.waveformDuration_peakTrough(iUnit), ...
+            forGUI.spatialDecayPoints(iUnit,:), qMetric.spatialDecaySlope(iUnit), qMetric.waveformBaselineFlatness(iUnit), ....
+            forGUI.tempWv(iUnit,:)] = bc_waveformShape(templateWaveforms,thisUnit, qMetric.maxChannels(thisUnit),...
+            param.ephys_sample_rate, channelPositions, param.maxWvBaselineFraction, waveformBaselineWindow,...
+            param.minThreshDetectPeaksTroughs, param.plotDetails); %do we need tempWv ? 
+    end
      
     %% amplitude
     if param.extractRaw
@@ -217,7 +228,11 @@ end
 
 
 %% get unit types and save data
-qMetric.maxChannels = qMetric.maxChannels(uniqueTemplates)'; 
+if param.loadPhy || param.useRawWaveforms
+   qMetric.maxChannels = qMetric.maxChannels'; 
+else
+   qMetric.maxChannels = qMetric.maxChannels(uniqueTemplates(uniqueTemplates <= size(qMetric.maxChannels,1)))'; 
+end
 if param.extractRaw
     qMetric.signalToNoiseRatio = signalToNoiseRatio'; 
 end

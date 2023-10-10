@@ -33,6 +33,7 @@ parquetwrite([fullfile(savePath, 'templates._bc_fractionRefractoryPeriodViolatio
 qMetric.fractionRPVs_estimatedTauR = arrayfun(@(x) qMetric.fractionRPVs(x, qMetric.RPV_tauR_estimate(x)), 1:size(qMetric.fractionRPVs,1));
 qMetric = rmfield(qMetric, 'fractionRPVs');
 
+% if nan waveforms
 % save the rest of quality metrics and fraction refractory period
 % violations for each unit's estimated tauR
 % make sure everything is a double first

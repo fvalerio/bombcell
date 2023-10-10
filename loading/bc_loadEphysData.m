@@ -1,5 +1,5 @@
 function [spikeTimes_samples, spikeTemplates, templateWaveforms, templateAmplitudes, ...
-    pcFeatures, pcFeatureIdx, channelPositions, goodChannels] = bc_loadEphysData(ephys_path, datasetidx)
+    pcFeatures, pcFeatureIdx, channelPositions, goodChannels] = bc_loadEphysData(ephys_path, datasetidx, loadPhy)
 % JF, Load ephys data (1-indexed)
 % ------
 % Inputs
@@ -7,6 +7,7 @@ function [spikeTimes_samples, spikeTemplates, templateWaveforms, templateAmplitu
 % ephys_path: character array defining the path to your kilosorted output files 
 % datasetidx: 1 x 1 double vector, only use if you have chronically
 % recorded stitched datasets. 
+% loadPhy: boolean. whether to load phy output if it is present or not 
 % ------
 % Outputs
 % ------
@@ -26,12 +27,14 @@ function [spikeTimes_samples, spikeTemplates, templateWaveforms, templateAmplitu
 % goodChannels: nChannels x 1 uint32 vector defining the channels used by
 %   kilosort (some are dropped during the spike sorting process)
 %
-
-
-
-spike_templates_0idx = readNPY([ephys_path filesep 'spike_templates.npy']);
-spikeTemplates = spike_templates_0idx + 1;
-if exist(fullfile(ephys_path,'spike_times_corrected.npy')) % When running pyKS stitched you need the 'aligned / corrected' spike times
+if loadPhy && ~isempty(dir([ephys_path filesep 'spike_clusters.npy']))
+    spike_templates_0idx = readNPY([ephys_path filesep 'spike_clusters.npy']);
+    spikeTemplates = spike_templates_0idx + 1;
+else
+    spike_templates_0idx = readNPY([ephys_path filesep 'spike_templates.npy']);
+    spikeTemplates = spike_templates_0idx + 1;
+end
+if exist(fullfile(ephys_path,'spike_times_corrected.npy'), 'file') % When running pyKS stitched you need the 'aligned / corrected' spike times
     spikeTimes_samples = double(readNPY([ephys_path filesep  'spike_times_corrected.npy']));
     spikeTimes_datasets = double(readNPY([ephys_path filesep  'spike_datasets.npy'])) + 1; %  which dataset? (zero-indexed so +1)
 else
@@ -60,7 +63,7 @@ goodChannels = readNPY([ephys_path filesep  'channel_map.npy']) + 1;
 
 
 %% Only use data set of interest - for unit match
-if nargin > 2  %- for unit match
+if nargin > 2 && ~isempty(datasetidx) %- for unit match
    
     spikeTimes_samples = spikeTimes_samples(spikeTimes_datasets == datasetidx);
     spikeTemplates = spikeTemplates(spikeTimes_datasets == datasetidx);
