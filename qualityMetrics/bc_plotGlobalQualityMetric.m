@@ -282,7 +282,7 @@ if param.plotGlobal
         warning('could not plot global plots')
     end
     if exist('prettify_plot', 'file')
-        prettify_plot('FigureColor', 'w')
+        prettify_plot('FigureColor', 'k')
     else
         warning('https://github.com/Julie-Fabre/prettify-matlab repo missing - download it and add it to your matlab path to make plots pretty')
     end
