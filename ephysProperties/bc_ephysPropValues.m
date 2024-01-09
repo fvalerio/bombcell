@@ -1,4 +1,4 @@
-function paramEP = bc_ephysPropValues
+function paramEP = bc_ephysPropValues(ephysMetaDir, rawFile, ephysKilosortPath, gain_to_uV)
 % 
 % JF, Load a parameter structure defining extraction and
 % classification parameters
@@ -13,9 +13,38 @@ function paramEP = bc_ephysPropValues
 %   classification parameters
 % 
 
+if nargin < 1
+    ephysMetaDir = '';
+end
+if nargin < 2
+    rawFile = 'NaN';
+end
+if nargin < 3
+    ephysKilosortPath = '';
+end
+
+if nargin < 4
+    gain_to_uV = NaN;
+end
+
 paramEP = struct; 
 paramEP.plotThis = 0;
 paramEP.verbose = 1;
+
+% recording parameters
+paramEP.ephys_sample_rate = 30000; % samples per second
+paramEP.nChannels = 385; %number of recorded channels (including any sync channels)
+    % recorded in the raw data. This is usually 384 or 385 for neuropixels
+    % recordings
+paramEP.nSyncChannels = 1;
+if  ~isempty(ephysMetaDir)
+    paramEP.ephysMetaFile = [ephysMetaDir.folder, filesep, ephysMetaDir.name];
+    paramEP.gain_to_uV = NaN;
+else
+    paramEP.ephysMetaFile = 'NaN';
+    paramEP.gain_to_uV = gain_to_uV;
+end
+paramEP.rawFile = rawFile;
 
 % duplicate spikes parameters 
 paramEP.removeDuplicateSpikes = 1;
@@ -33,7 +62,7 @@ paramEP.saveMultipleRaw = 0; % If you wish to save the nRawSpikesToExtract as we
     % to track chronic cells over days after this
 paramEP.decompressData = 0; % whether to decompress .cbin ephys data 
 paramEP.spikeWidth = 82; % width in samples 
-paramEP.extractRaw = 1; %whether to extract raw waveforms or not 
+paramEP.extractRaw = 0; %whether to extract raw waveforms or not 
 paramEP.probeType = 1; % if you are using spikeGLX and your meta file does 
     % not contain information about your probe type for some reason
     % specify it here: '1' for 1.0 (3Bs) and '2' for 2.0 (single or 4-shanks)
@@ -58,6 +87,8 @@ paramEP.longISI = 2;
 paramEP.minThreshDetectPeaksTroughs = 0.2; % this is multiplied by the max value 
     % in a units waveform to give the minimum prominence to detect peaks using
     % matlab's findpeaks function.
+paramEP.maxWvBaselineFraction = 0.3; % maximum absolute value in waveform baseline
+    % should not exceed this fraction of the waveform's abolute peak value
 
 % QQ set this the same as qmetrics (load useChunks Start and stop)
 %paramEP.computeTimeChunks = 1; % compute ephysProperties for different time chunks 
